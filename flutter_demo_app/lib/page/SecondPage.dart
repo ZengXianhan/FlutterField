@@ -1,33 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:english_words/english_words.dart';
+import 'package:flutter_demo_app/main.dart';
 
-void main() => runApp(MyApp());
 
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
-
-  List<String> _getList(){
-    List<String> strList = List<String>.generate(100, (i)=> WordPair.random().asLowerCase);
-    return strList;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Field',
-      theme: ThemeData(
-        primarySwatch: Colors.red,
-      ),
-      home: TestListViewPage(key, _getList()),
-    );
-  }
-}
-
-class TestListViewPage extends StatelessWidget {
-
+class SecondPage extends StatelessWidget {
+  static final String pageName = "second";
   final List<String> list;
 
-  TestListViewPage(Key key, this.list) : super(key:key);
+  SecondPage(Key key, this.list) : super(key:key);
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +19,7 @@ class TestListViewPage extends StatelessWidget {
       body: Center(
         child: GridView(
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
+              crossAxisCount: 3,
               childAspectRatio: 1.333,
               crossAxisSpacing: 2.0,
               mainAxisSpacing: 2.0
@@ -48,7 +27,7 @@ class TestListViewPage extends StatelessWidget {
           padding: EdgeInsets.all(10),
           children: <Widget>[
             Image.network(
-                "https://cdn.pixabay.com/photo/2016/08/03/14/24/roses-1566792_960_720.jpg",
+              "https://cdn.pixabay.com/photo/2016/08/03/14/24/roses-1566792_960_720.jpg",
               fit: BoxFit.fill,
             ),
             Image.network(
@@ -135,6 +114,3 @@ class TestListViewPage extends StatelessWidget {
     );
   }
 }
-
-
-
