@@ -17,7 +17,7 @@ class NavigatorUtils {
     Navigator.pushNamed(context, routeName);
   }
 
-  ///主页
+  //主页
   static goHome(BuildContext context) {
     Navigator.pushReplacementNamed(context, MyHomePage.pageName);
   }
@@ -26,5 +26,11 @@ class NavigatorUtils {
     Navigator.pushNamed(context, SecondPage.pageName);
   }
 
+//  static goHome(BuildContext context) {
+//    NavigatorRouter(context, new MyHomePage(title: "title",));
+//  }
 
+//  static NavigatorRouter(BuildContext context, Widget widget) {
+//    return Navigator.push(context, new CupertinoPageRoute(builder: (context) => widget));
+//  }
 }

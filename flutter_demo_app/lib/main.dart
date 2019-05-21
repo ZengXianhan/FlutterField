@@ -1,140 +1,146 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:english_words/english_words.dart';
+import 'package:flutter_demo_app/common/net/code.dart';
+import 'package:flutter_demo_app/page/HomePage.dart';
+import 'package:flutter_demo_app/page/WelcomePage.dart';
+import 'package:flutter_demo_app/common/redux/app_state.dart';
+import 'package:flutter_demo_app/utils/common_function.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
-void main() => runApp(MyApp());
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:redux/redux.dart';
 
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
+import 'common/localization/app_localizations_delegate.dart';
+import 'common/net/event/http_error_event.dart';
 
-  List<String> _getList(){
-    List<String> strList = List<String>.generate(100, (i)=> WordPair.random().asLowerCase);
-    return strList;
-  }
+void main() {
+  runZoned(() {
+    runApp(FlutterReduxApp());
+    PaintingBinding.instance.imageCache.maximumSize = 100;
+  }, onError: (Object obj, StackTrace stack) {
+    print(obj);
+    print(stack);
+  });
+}
+
+class FlutterReduxApp extends StatelessWidget {
+  /// 创建Store，引用 GSYState 中的 appReducer 实现 Reducer 方法
+  /// initialState 初始化 State
+  final store = new Store<AppState>(
+    appReducer,
+
+    ///初始化数据
+    initialState: new AppState(themeData: ThemeData(primarySwatch: Colors.blue, platform: TargetPlatform.android), locale: Locale('zh', 'CH')),
+  );
+
+  FlutterReduxApp({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Field',
-      theme: ThemeData(
-        primarySwatch: Colors.red,
-      ),
-      home: TestListViewPage(key, _getList()),
+    /// 通过 StoreProvider 应用 store
+    return new StoreProvider(
+      store: store,
+      child: new StoreBuilder<AppState>(builder: (context, store) {
+        return new MaterialApp(
+
+          ///多语言实现代理
+            localizationsDelegates: [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              AppLocalizationsDelegate.delegate,
+            ],
+            locale: store.state.locale,
+            supportedLocales: [store.state.locale],
+            theme: store.state.themeData,
+            routes: {
+              WelcomePage.pageName: (context) {
+                store.state.platformLocale = Localizations.localeOf(context);
+                return WelcomePage();
+              },
+              MyHomePage.pageName: (context) {
+                ///通过 Localizations.override 包裹一层，
+                return new GSYLocalizations(
+                  child: new MyHomePage(title: "Home Page",),
+                );
+              },
+//              LoginPage.sName: (context) {
+//                return new GSYLocalizations(
+//                  child: new LoginPage(),
+//                );
+//              },
+            });
+      }),
     );
   }
 }
 
-class TestListViewPage extends StatelessWidget {
+class GSYLocalizations extends StatefulWidget {
+  final Widget child;
 
-  final List<String> list;
-
-  TestListViewPage(Key key, this.list) : super(key:key);
+  GSYLocalizations({Key key, this.child}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    int length = list.length;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Test Listview"),
-      ),
-      body: Center(
-        child: GridView(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-              childAspectRatio: 1.333,
-              crossAxisSpacing: 2.0,
-              mainAxisSpacing: 2.0
-          ),
-          padding: EdgeInsets.all(10),
-          children: <Widget>[
-            Image.network(
-                "https://cdn.pixabay.com/photo/2016/08/03/14/24/roses-1566792_960_720.jpg",
-              fit: BoxFit.fill,
-            ),
-            Image.network(
-              "https://cdn.pixabay.com/photo/2016/08/03/14/24/roses-1566792_960_720.jpg",
-              fit: BoxFit.fill,
-            ),
-            Image.network(
-              "https://cdn.pixabay.com/photo/2016/08/03/14/24/roses-1566792_960_720.jpg",
-              fit: BoxFit.fill,
-            ),
-            Image.network(
-              "https://cdn.pixabay.com/photo/2016/08/03/14/24/roses-1566792_960_720.jpg",
-              fit: BoxFit.fill,
-            ),
-            Image.network(
-              "https://cdn.pixabay.com/photo/2016/08/03/14/24/roses-1566792_960_720.jpg",
-              fit: BoxFit.fill,
-            ),
-            Image.network(
-              "https://cdn.pixabay.com/photo/2016/08/03/14/24/roses-1566792_960_720.jpg",
-              fit: BoxFit.fill,
-            ),
-            Image.network(
-              "https://cdn.pixabay.com/photo/2016/08/03/14/24/roses-1566792_960_720.jpg",
-              fit: BoxFit.fill,
-            ),
-            Image.network(
-              "https://cdn.pixabay.com/photo/2016/08/03/14/24/roses-1566792_960_720.jpg",
-              fit: BoxFit.fill,
-            )
-          ],
-        ),
-
-//        child: ListView.builder(
-//            itemBuilder: (context, index){
-//              return ListTile(
-//                leading: Icon(Icons.list),
-//                  title: Text("${list[index]}"),
-//                  subtitle: Text("${list[length - 1 - index]}"),
-//                trailing: Image.network("https://cdn.pixabay.com/photo/2016/08/03/14/24/roses-1566792_960_720.jpg"),
-//              );
-//            },
-//          itemCount: length,
-//        ),
-
-//        child: ListView(
-//          scrollDirection: Axis.vertical,
-//          children: <Widget>[
-//            Container(
-//              width: 100,
-//              height: 400,
-//              child: Image.network(
-//                  "https://cdn.pixabay.com/photo/2016/08/03/14/24/roses-1566792_960_720.jpg",
-//                fit: BoxFit.fitHeight,
-//              ),
-//            ),
-//            Container(
-//              width: 100,
-//              height: 400,
-//              child: Image.network(
-//                "https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1489&q=80",
-//                fit: BoxFit.fitHeight,
-//              ),
-//            ),
-//            Container(
-//              width: 100,
-//              height: 400,
-//              child: Image.network(
-//                "https://cdn.pixabay.com/photo/2016/08/03/14/24/roses-1566792_960_720.jpg",
-//                fit: BoxFit.fitHeight,
-//              ),
-//            ),
-//            Container(
-//              width: 100,
-//              height: 400,
-//              child: Image.network(
-//                "https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1489&q=80",
-//                fit: BoxFit.fitHeight,
-//              ),
-//            ),
-//          ],
-//        ),
-      ),
-    );
+  State<GSYLocalizations> createState() {
+    return new _GSYLocalizations();
   }
 }
 
+class _GSYLocalizations extends State<GSYLocalizations> {
+  StreamSubscription stream;
 
+  @override
+  Widget build(BuildContext context) {
+    return new StoreBuilder<AppState>(builder: (context, store) {
+      ///通过 StoreBuilder 和 Localizations 实现实时多语言切换
+      return new Localizations.override(
+        context: context,
+        locale: store.state.locale,
+        child: widget.child,
+      );
+    });
+  }
 
+  @override
+  void initState() {
+    super.initState();
+    stream = Code.eventBus.on<HttpErrorEvent>().listen((event) {
+      errorHandleFunction(event.code, event.message);
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    if (stream != null) {
+      stream.cancel();
+      stream = null;
+    }
+  }
+
+  errorHandleFunction(int code, message) {
+    switch (code) {
+      case Code.NETWORK_ERROR:
+        Fluttertoast.showToast(msg: CommonFunction.getLocale(context).networkError);
+        break;
+      case 401:
+        Fluttertoast.showToast(msg: CommonFunction.getLocale(context).networkError401);
+        break;
+      case 403:
+        Fluttertoast.showToast(msg: CommonFunction.getLocale(context).networkError403);
+        break;
+      case 404:
+        Fluttertoast.showToast(msg: CommonFunction.getLocale(context).networkError404);
+        break;
+      case Code.NETWORK_TIMEOUT:
+      //超时
+        Fluttertoast.showToast(msg: CommonFunction.getLocale(context).networkErrorTimeout);
+        break;
+      default:
+        Fluttertoast.showToast(msg: CommonFunction.getLocale(context).networkErrorUnknown + " " + message);
+        break;
+    }
+  }
+}
